@@ -16,4 +16,6 @@ cpi = ["no-entrypoint"]
 default = []
 
 [dependencies]
+anchor-spl = { version = "0.26.0", features = ["dex"] }
 anchor-lang = "0.26.0"
+clockwork-sdk = "1.4.0"
