@@ -2,7 +2,7 @@ import * as anchor from "@project-serum/anchor";
 import { Program } from "@project-serum/anchor";
 import { MaiusInvest } from "../target/types/maius_invest";
 
-describe("maius-invest", () => {
+describe("maius_invest", () => {
   // Configure the client to use the local cluster.
   anchor.setProvider(anchor.AnchorProvider.env());
 
