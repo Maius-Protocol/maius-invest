@@ -2,7 +2,7 @@
 seeds = false
 skip-lint = false
 [programs.localnet]
-maius_invest = "Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS"
+maius_invest = "EZgeH8NyKikE796CWWnYQfYJ839piWatDjJzXLJS1FvR"
 
 [registry]
 url = "https://api.apr.dev"
