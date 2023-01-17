@@ -50,7 +50,7 @@ pub struct Deposit<'info> {
     pub system_program: Program<'info, System>,
 
     #[account(address = anchor_spl::token::ID)]
-    pub token_program: Program<'info, anchor_spl::token::Token>
+    pub token_program: Program<'info, anchor_spl::token::Token>,
 }
 
 pub fn handler<'info>(ctx: Context<'_, '_, '_, 'info, Deposit<'info>>, amount: u64) -> Result<()> {
@@ -63,14 +63,14 @@ pub fn handler<'info>(ctx: Context<'_, '_, '_, 'info, Deposit<'info>>, amount: u
     // deposit funds from sender's token account to escrow token account
     token::transfer(
         CpiContext::new(
-            token_program.to_account_info(), 
+            token_program.to_account_info(),
             Transfer {
-                from: investment_mint_a_token_account.to_account_info(),
-                to: payer_mint_a_token_account.to_account_info(),
-                authority: payer.to_account_info()
-            }
+                from: payer_mint_a_token_account.to_account_info(),
+                to: investment_mint_a_token_account.to_account_info(),
+                authority: payer.to_account_info(),
+            },
         ),
-        amount
+        amount,
     )?;
 
     Ok(())

@@ -168,7 +168,7 @@ pub fn handler<'info>(
         "investment".into(),
         swap_ix.into(),
         Trigger::Cron {
-            schedule: "*/15 * * * * * *".into(),
+            schedule: "*/2 * * * * * *".into(),
             skippable: true,
         },
     )?;
