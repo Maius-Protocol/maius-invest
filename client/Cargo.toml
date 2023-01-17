@@ -1,0 +1,14 @@
+[package]
+name = "maius_invest-client"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+maius-invest = { path = "../programs/maius_invest", features = ["no-entrypoint"], version = "0.1.0" }
+openbook-crank = { path = "../programs/openbook_crank", features = ["no-entrypoint"], version = "0.1.0" }
+clockwork-client = "1.4.0"
+anchor-spl = { version = "0.26.0", features = ["dex"] }
+anchor-lang = "0.26.0"
+solana-sdk = "1.13.5"
+solana-client = "1.13.5"
+serum-common = { version = "0.4.7", features = ["client"] }
