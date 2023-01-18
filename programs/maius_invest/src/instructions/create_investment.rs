@@ -92,7 +92,10 @@ pub struct CreateInvestment<'info> {
 
 pub fn handler<'info>(
     ctx: Context<'_, '_, '_, 'info, CreateInvestment<'info>>,
-    swap_amount: u64,
+    deposit_amount: u64,
+    frequency: u64,
+    end_time: u64,
+    cron_expression: String,
 ) -> Result<()> {
     // Get accounts
     let clockwork_program = &ctx.accounts.clockwork_program;
@@ -117,6 +120,22 @@ pub fn handler<'info>(
 
     // get investment bump
     let bump = *ctx.bumps.get("investment").unwrap();
+
+    // calculate swap_amount
+    let current_time = Clock::get().unwrap().unix_timestamp;
+    let swap_amount = u64::try_from(
+        i64::try_from(deposit_amount).unwrap()
+            / ((i64::try_from(end_time).unwrap() - current_time)
+                / i64::try_from(frequency).unwrap()),
+    )
+    .unwrap();
+
+    // msg!("deposit_amount: {}", deposit_amount);
+    // msg!("current_time: {}", current_time);
+    // msg!("end_time: {}", end_time);
+    // msg!("frequency: {}", frequency);
+    // msg!("swap_amount: {}", swap_amount);
+    // msg!("cron_expression: {}", cron_expression);
 
     // initialize investment account
     investment.new(payer.key(), mint_a.key(), mint_b.key(), swap_amount)?;
@@ -168,7 +187,7 @@ pub fn handler<'info>(
         "investment".into(),
         swap_ix.into(),
         Trigger::Cron {
-            schedule: "*/2 * * * * * *".into(),
+            schedule: cron_expression.into(),
             skippable: true,
         },
     )?;

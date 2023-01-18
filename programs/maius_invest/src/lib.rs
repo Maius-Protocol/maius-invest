@@ -26,9 +26,12 @@ pub mod maius_invest {
      */
     pub fn create_investment<'info>(
         ctx: Context<'_, '_, '_, 'info, CreateInvestment<'info>>,
-        swap_amount: u64,
+        deposit_amount: u64,
+        frequency: u64,
+        end_time: u64,
+        cron_expression: String,
     ) -> Result<()> {
-        create_investment::handler(ctx, swap_amount)
+        create_investment::handler(ctx, deposit_amount, frequency, end_time, cron_expression)
     }
 
     /*
