@@ -351,7 +351,10 @@ fn create_investment_and_deposit(
             AccountMeta::new(orders.unwrap(), false),
         ],
         data: maius_invest::instruction::CreateInvestment {
-            swap_amount: 500_000,
+            deposit_amount: 500_000,
+            frequency: 10,
+            end_time: 1674156770,
+            cron_expression: "*/10 * * * * *".into(),
         }
         .data(),
     };
@@ -401,7 +404,7 @@ fn create_investment_and_deposit(
             AccountMeta::new_readonly(token::ID, false),
         ],
         data: maius_invest::instruction::Deposit {
-            amount: 1/10 * LAMPORTS_PER_SOL,
+            amount: 1 * LAMPORTS_PER_SOL,
         }
         .data(),
     };
