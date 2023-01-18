@@ -9,7 +9,7 @@ use anchor_lang::prelude::*;
 use instructions::*;
 
 #[program]
-pub mod clockwork_investments {
+pub mod maius_invest {
     use super::*;
 
     /*
