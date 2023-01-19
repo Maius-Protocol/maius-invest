@@ -1873,6 +1873,7 @@ dependencies = [
  "anchor-lang",
  "anchor-spl",
  "clockwork-client",
+ "clockwork-sdk",
  "maius-invest",
  "openbook-crank",
  "serum-common",

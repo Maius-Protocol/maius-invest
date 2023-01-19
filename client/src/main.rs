@@ -12,9 +12,10 @@ use {
         token,
     },
     clockwork_client::{
-        thread::{self, state::Thread},
+        thread::{self, instruction::thread_create, state::Thread, state::Trigger},
         Client, ClientResult, SplToken,
     },
+    clockwork_sdk::utils::PAYER_PUBKEY,
     serum_common::client::rpc::mint_to_new_account,
     solana_sdk::{
         instruction::Instruction, native_token::LAMPORTS_PER_SOL, signature::Keypair,
@@ -29,6 +30,9 @@ fn main() -> ClientResult<()> {
     let payer = Keypair::new();
     let client = Client::new(payer, "http://localhost:8899".into());
     let bob = Keypair::new();
+
+    println!("payer: {}", client.payer_pubkey());
+    println!("bob: {}", bob.pubkey());
 
     // airdrop a bunch bc it's expensive to setup a dex market and for all of the txs lol
     client.airdrop(&client.payer_pubkey(), 2 * LAMPORTS_PER_SOL)?;
@@ -51,16 +55,10 @@ fn main() -> ClientResult<()> {
         market_keys.coin_mint,
     );
     let investment_thread = Thread::pubkey(investment, "investment".to_string());
-
-    // derive openbook_crank PDAs
-    let crank = openbook_crank::state::Crank::pubkey(client.payer_pubkey(), market_keys.market, "SOL_USDC_OPENBOOK_TEST_2".into());
-    let crank_thread = Thread::pubkey(crank, "crank".into());
-
     print_explorer_link(investment_thread, "investment_thread".to_string())?;
-    print_explorer_link(crank_thread, "crank_thread".to_string())?;
 
     // init openbook_crank program
-    initialize_openbook_crank(&client, crank, crank_thread, &market_keys)?;
+    initialize_openbook_crank(&client, &market_keys, "SOL_USDC_OPENBOOK_TEST_2".into())?;
 
     let bob_mint_b_wallet = mint_to_new_account(
         &client,
@@ -102,11 +100,11 @@ fn main() -> ClientResult<()> {
         );
 
     print_explorer_link(
-        payer_mint_a_token_account,
+        payer_mint_a_token_account.key(),
         "payer_mint_a_token_account".to_string(),
     )?;
     print_explorer_link(
-        payer_mint_b_token_account,
+        payer_mint_b_token_account.key(),
         "payer_mint_b_token_account".to_string(),
     )?;
     print_explorer_link(
@@ -142,6 +140,8 @@ fn main() -> ClientResult<()> {
 
     // Alice's open orders account
     let mut oo_account_alice = None;
+
+    init_dex_account(&client, &mut oo_account_alice)?;
 
     create_investment_and_deposit(
         &client,
@@ -274,12 +274,20 @@ fn setup_market(client: &Client) -> ClientResult<MarketKeys> {
 
 fn initialize_openbook_crank(
     client: &Client,
-    crank: Pubkey,
-    crank_thread: Pubkey,
     market_keys: &MarketKeys,
+    id: String,
 ) -> ClientResult<()> {
+    // derive openbook_crank PDAs
+    let crank =
+        openbook_crank::state::Crank::pubkey(client.payer_pubkey(), market_keys.market, id.clone());
+    let crank_thread =
+        clockwork_client::thread::state::Thread::pubkey(client.payer_pubkey(), id.clone());
+
+    print_explorer_link(crank_thread, "crank_thread".to_string())?;
+
     client.airdrop(&crank_thread, LAMPORTS_PER_SOL)?;
 
+    // define initialize ix
     let initialize_ix = Instruction {
         program_id: openbook_crank::ID,
         accounts: vec![
@@ -294,12 +302,39 @@ fn initialize_openbook_crank(
             AccountMeta::new(client.payer_pubkey(), true),
             AccountMeta::new_readonly(system_program::ID, false),
         ],
-        data: openbook_crank::instruction::Initialize {id: "SOL_USDC_OPENBOOK_TEST_2".into()}.data(),
+        data: openbook_crank::instruction::Initialize { id: id.clone() }.data(),
     };
+
+    // create thread with read events ix
+    let thread_create = thread_create(
+        client.payer_pubkey(),
+        id,
+        Instruction {
+            program_id: openbook_crank::ID,
+            accounts: vec![
+                AccountMeta::new(crank.key(), false),
+                AccountMeta::new(crank_thread.key(), true),
+                AccountMeta::new_readonly(anchor_spl::dex::ID, false),
+                AccountMeta::new_readonly(market_keys.event_q, false),
+                AccountMeta::new_readonly(market_keys.market, false),
+                AccountMeta::new(PAYER_PUBKEY, true),
+                AccountMeta::new_readonly(system_program::ID, false),
+            ],
+            data: openbook_crank::instruction::ReadEvents.data(),
+        }
+        .into(),
+        client.payer_pubkey(),
+        crank_thread,
+        Trigger::Account {
+            address: market_keys.event_q,
+            offset: 8 + 8,
+            size: 8,
+        },
+    );
 
     sign_send_and_confirm_tx(
         &client,
-        [initialize_ix].to_vec(),
+        [initialize_ix, thread_create].to_vec(),
         None,
         "initialize_openbook_crank".to_string(),
     )?;
@@ -351,10 +386,10 @@ fn create_investment_and_deposit(
             AccountMeta::new(orders.unwrap(), false),
         ],
         data: maius_invest::instruction::CreateInvestment {
-            deposit_amount: 500_000,
+            deposit_amount: 1_000_000_000_000_000,
             frequency: 10,
-            end_time: 1674156770,
-            cron_expression: "*/10 * * * * *".into(),
+            end_time: 1674243993,
+            cron_expression: "*/10 * * * * * *".into(),
         }
         .data(),
     };
@@ -386,7 +421,7 @@ fn create_investment_and_deposit(
         &client.payer(),
         &market_keys.pc_mint,
         &payer_mint_a_token_account,
-        2 * LAMPORTS_PER_SOL,
+        2_000_000_000_000_000,
         9,
     )?;
 
@@ -404,7 +439,7 @@ fn create_investment_and_deposit(
             AccountMeta::new_readonly(token::ID, false),
         ],
         data: maius_invest::instruction::Deposit {
-            amount: 1 * LAMPORTS_PER_SOL,
+            amount: 1_000_000_000_000_000,
         }
         .data(),
     };

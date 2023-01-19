@@ -114,8 +114,20 @@ export type MaiusInvest = {
       ],
       "args": [
         {
-          "name": "swapAmount",
+          "name": "depositAmount",
           "type": "u64"
+        },
+        {
+          "name": "frequency",
+          "type": "u64"
+        },
+        {
+          "name": "endTime",
+          "type": "u64"
+        },
+        {
+          "name": "cronExpression",
+          "type": "string"
         }
       ]
     },
@@ -489,8 +501,20 @@ export const IDL: MaiusInvest = {
       ],
       "args": [
         {
-          "name": "swapAmount",
+          "name": "depositAmount",
           "type": "u64"
+        },
+        {
+          "name": "frequency",
+          "type": "u64"
+        },
+        {
+          "name": "endTime",
+          "type": "u64"
+        },
+        {
+          "name": "cronExpression",
+          "type": "string"
         }
       ]
     },
