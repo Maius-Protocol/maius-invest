@@ -31,8 +31,8 @@ pub struct Swap<'info> {
         seeds = [
             SEED_INVESTMENT,
             investment.payer.key().as_ref(),
-            investment.payer.key().as_ref(),
-            investment.payer.key().as_ref()
+            investment.mint_a.key().as_ref(),
+            investment.mint_b.key().as_ref()
         ],
         bump,
     )]
@@ -84,6 +84,8 @@ pub fn handler<'info>(ctx: Context<'_, '_, '_, 'info, Swap<'info>>) -> Result<Th
 
     // get investment bump
     let bump = *ctx.bumps.get("investment").unwrap();
+
+    // msg!("swap_amount: {}", investment.swap_amount);
 
     // place order on openbook dex
     anchor_spl::dex::new_order_v3(
