@@ -7,6 +7,7 @@ import type { AppProps } from 'next/app';
 import type { FC } from 'react';
 import React, { useMemo } from 'react';
 import { PhantomWalletAdapter } from "@solana/wallet-adapter-phantom";
+import 'antd/dist/reset.css';
 
 // Use require instead of import since order matters
 require('@solana/wallet-adapter-react-ui/styles.css');
