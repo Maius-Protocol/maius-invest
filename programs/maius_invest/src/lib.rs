@@ -69,4 +69,13 @@ pub mod maius_invest {
     ) -> Result<clockwork_sdk::state::ThreadResponse> {
         swap::handler(ctx)
     }
+
+    /*
+     * pause_thread
+     */
+    pub fn pause_thread<'info>(
+        ctx: Context<'_, '_, '_, 'info, PauseThread<'info>>,
+    ) -> Result<clockwork_sdk::state::ThreadResponse> {
+        pause_thread::handler(ctx)
+    }
 }
