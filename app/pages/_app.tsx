@@ -17,6 +17,7 @@ import { useRouter } from "next/router";
 import { Card, Segmented } from "antd";
 import Home from "./index";
 import dynamic from "next/dynamic";
+import { QueryClient, QueryClientProvider } from "react-query";
 
 // Use require instead of import since order matters
 require("@solana/wallet-adapter-react-ui/styles.css");
@@ -27,6 +28,7 @@ const WalletMultiButtonDynamic = dynamic(
     (await import("@solana/wallet-adapter-react-ui")).WalletMultiButton,
   { ssr: false }
 );
+const queryClient = new QueryClient();
 
 const App: FC<AppProps> = ({ Component, pageProps }) => {
   const network = WalletAdapterNetwork.Devnet;
@@ -49,54 +51,56 @@ const App: FC<AppProps> = ({ Component, pageProps }) => {
   }, [tab]);
 
   return (
-    <ConnectionProvider endpoint={endpoint}>
-      <WalletProvider wallets={wallets} autoConnect>
-        <WalletModalProvider>
-          <div className={styles.container}>
-            <Head>
-              <title>Maius Invest</title>
-              <meta name="description" content="Maius Invest" />
-              <link rel="icon" href="/favicon.ico" />
-            </Head>
+    <QueryClientProvider client={queryClient}>
+      <ConnectionProvider endpoint={endpoint}>
+        <WalletProvider wallets={wallets} autoConnect>
+          <WalletModalProvider>
+            <div className={styles.container}>
+              <Head>
+                <title>Maius Invest</title>
+                <meta name="description" content="Maius Invest" />
+                <link rel="icon" href="/favicon.ico" />
+              </Head>
 
-            <main className={styles.main}>
-              <div className={styles.walletButtons}>
-                <Card
-                  title={
-                    <div style={{ width: "100%", padding: "12px 4px" }}>
-                      <div
-                        style={{
-                          display: "flex",
-                          flexDirection: "row",
-                          alignItems: "center",
-                          justifyContent: "center",
-                        }}
-                      >
-                        <div style={{ width: "100%" }}>Maius Invest</div>
-                        <div style={{ zIndex: 9999999 }}>
-                          <WalletMultiButtonDynamic />
+              <main className={styles.main}>
+                <div className={styles.walletButtons}>
+                  <Card
+                    title={
+                      <div style={{ width: "100%", padding: "12px 4px" }}>
+                        <div
+                          style={{
+                            display: "flex",
+                            flexDirection: "row",
+                            alignItems: "center",
+                            justifyContent: "center",
+                          }}
+                        >
+                          <div style={{ width: "100%" }}>Maius Invest</div>
+                          <div style={{ zIndex: 9999999 }}>
+                            <WalletMultiButtonDynamic />
+                          </div>
                         </div>
+                        <Segmented
+                          block
+                          options={["Invests", "Positions"]}
+                          style={{ marginTop: "12px" }}
+                          value={tab}
+                          onChange={setTab}
+                        />
                       </div>
-                      <Segmented
-                        block
-                        options={["Invests", "Positions"]}
-                        style={{ marginTop: "12px" }}
-                        value={tab}
-                        onChange={setTab}
-                      />
-                    </div>
-                  }
-                  bordered={false}
-                  style={{ width: 500, minHeight: 500 }}
-                >
-                  <Component {...pageProps} />
-                </Card>
-              </div>
-            </main>
-          </div>
-        </WalletModalProvider>
-      </WalletProvider>
-    </ConnectionProvider>
+                    }
+                    bordered={false}
+                    style={{ width: 500, minHeight: 500 }}
+                  >
+                    <Component {...pageProps} />
+                  </Card>
+                </div>
+              </main>
+            </div>
+          </WalletModalProvider>
+        </WalletProvider>
+      </ConnectionProvider>
+    </QueryClientProvider>
   );
 };
 

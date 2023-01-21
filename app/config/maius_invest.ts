@@ -352,6 +352,45 @@ export type MaiusInvest = {
       "returns": {
         "defined": "clockwork_sdk::state::ThreadResponse"
       }
+    },
+    {
+      "name": "pauseThread",
+      "accounts": [
+        {
+          "name": "investment",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "investmentThread",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "clockworkProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [],
+      "returns": {
+        "defined": "clockwork_sdk::state::ThreadResponse"
+      }
     }
   ],
   "accounts": [
@@ -731,6 +770,45 @@ export const IDL: MaiusInvest = {
         },
         {
           "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [],
+      "returns": {
+        "defined": "clockwork_sdk::state::ThreadResponse"
+      }
+    },
+    {
+      "name": "pauseThread",
+      "accounts": [
+        {
+          "name": "investment",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "investmentThread",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "clockworkProgram",
           "isMut": false,
           "isSigner": false
         }

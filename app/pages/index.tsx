@@ -1,6 +1,3 @@
-import Head from "next/head";
-import styles from "../styles/Home.module.css";
-import dynamic from "next/dynamic";
 import { Button, Card, InputNumber, Segmented, Select, Typography } from "antd";
 import SelectToken from "../src/components/SelectToken";
 import SelectFrequency from "../src/components/SelectFrequency";
@@ -9,7 +6,11 @@ import { useForm } from "react-hook-form";
 import { useWallet } from "@solana/wallet-adapter-react";
 import tokens from "../src/utils/tokens";
 import React, { useEffect, useState } from "react";
-import { useRouter } from "next/router";
+import { PublicKey } from "@solana/web3.js";
+import { program, programTypes } from "../utils/maiusInvest";
+import { useMutation } from "react-query";
+import { web3 } from "@project-serum/anchor";
+import BN from "bn.js";
 const { Option } = Select;
 
 export default function Home() {
@@ -29,7 +30,19 @@ export default function Home() {
     formState: { errors },
   } = form;
 
-  const onSubmit = (data) => console.log(data);
+  const { mutateAsync, isLoading } = useMutation((params) => {
+    program.methods.createInvestment(
+      new BN(params.from_token_amount),
+      new BN(123),
+      new BN(123),
+      "sdfs"
+    );
+  });
+
+  const onSubmit = (data) => {
+    const params = {};
+    console.log(data);
+  };
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
