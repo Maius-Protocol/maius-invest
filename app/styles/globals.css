@@ -24,3 +24,7 @@ a {
     background: black;
   }
 }
+
+.ant-card-head-title {
+  overflow: unset!important;
+}
