@@ -12,11 +12,7 @@ use {
     },
     clockwork_sdk::state::{ThreadResponse, Thread},
     clockwork_sdk::{
-        thread_program::{
-            self,
-            accounts::{Thread, ThreadAccount},
-            ThreadProgram,
-        }
+        ThreadProgram,
     }
 };
 
@@ -34,11 +30,8 @@ pub struct PauseThread<'info> {
     )]
     pub investment: Account<'info, Investment>,
 
-    #[account(
-        address = investment_thread.pubkey(),
-        constraint = investment_thread.id.eq("investment")
-    )]
-    pub investment_thread: Account<'info, Thread>,
+    #[account(address = Thread::pubkey(investment.key(), "investment".into()))]
+    pub investment_thread: SystemAccount<'info>,
 
     #[account(mut)]
     pub payer: Signer<'info>,
@@ -48,19 +41,20 @@ pub struct PauseThread<'info> {
 
     #[account(address = system_program::ID)]
     pub system_program: Program<'info, System>,
-    #[account(address = thread_program::ID)]
-    pub thread_program: Program<'info, ThreadProgram>,
+    #[account(address = clockwork_sdk::ID)]
+    pub clockwork_program: Program<'info, ThreadProgram>,
 }
 
 pub fn handler(ctx: Context<PauseThread>) -> Result<ThreadResponse> {
     let investment = &ctx.accounts.investment;
     let investment_thread = &ctx.accounts.investment_thread;
+    let clockwork_program = &ctx.accounts.clockwork_program;
     // get investment bump
     let bump = *ctx.bumps.get("investment").unwrap();
 
-    clockwork_sdk::thread_program::cpi::thread_stop(CpiContext::new_with_signer(
-        thread_program.to_account_info(),
-        clockwork_sdk::thread_program::cpi::accounts::ThreadStop {
+    clockwork_sdk::cpi::thread_stop(CpiContext::new_with_signer(
+        clockwork_program.to_account_info(),
+        clockwork_sdk::cpi::ThreadStop {
             authority: investment.to_account_info(),
             thread: investment_thread.to_account_info(),
         },
