@@ -38,6 +38,15 @@ pub struct CreateInvestment<'info> {
 
     #[account(
         init,
+        seeds = [SEED_POSITION, investment.key().as_ref(), payer.key().as_ref()],
+        bump,
+        payer = payer,
+        space = 8 + size_of::<Position>(),
+    )]
+    pub position: Box<Account<'info, Position>>,
+
+    #[account(
+        init,
         payer = payer,
         associated_token::authority = investment,
         associated_token::mint = mint_a
@@ -101,6 +110,7 @@ pub fn handler<'info>(
     let clockwork_program = &ctx.accounts.clockwork_program;
     let dex_program = &ctx.accounts.dex_program;
     let investment = &mut ctx.accounts.investment;
+    let position = &mut ctx.accounts.position;
     let investment_mint_a_token_account = &ctx.accounts.investment_mint_a_token_account;
     let mint_a = &ctx.accounts.mint_a;
     let mint_b = &ctx.accounts.mint_b;
@@ -130,6 +140,7 @@ pub fn handler<'info>(
     )
     .unwrap();
 
+
     // msg!("deposit_amount: {}", deposit_amount);
     // msg!("current_time: {}", current_time);
     // msg!("end_time: {}", end_time);
@@ -139,6 +150,10 @@ pub fn handler<'info>(
 
     // initialize investment account
     investment.new(payer.key(), mint_a.key(), mint_b.key(), swap_amount)?;
+
+    let number_of_order= ((i64::try_from(end_time).unwrap() - current_time)
+                                / i64::try_from(frequency).unwrap());
+    position.new(investment.key(), payer.key(), i64::from(current_time), deposit_amount, number_of_order)?;
 
     // create swap ix
     let swap_ix = Instruction {
