@@ -6,11 +6,8 @@ import { useForm } from "react-hook-form";
 import { useWallet } from "@solana/wallet-adapter-react";
 import tokens from "../src/utils/tokens";
 import React, { useEffect, useState } from "react";
-import { PublicKey } from "@solana/web3.js";
 import { program, programTypes } from "../utils/maiusInvest";
 import { useMutation } from "react-query";
-import { web3 } from "@project-serum/anchor";
-import BN from "bn.js";
 const { Option } = Select;
 
 export default function Home() {
@@ -31,12 +28,12 @@ export default function Home() {
   } = form;
 
   const { mutateAsync, isLoading } = useMutation((params) => {
-    program.methods.createInvestment(
-      new BN(params.from_token_amount),
-      new BN(123),
-      new BN(123),
-      "sdfs"
-    );
+    // program.methods.createInvestment(
+    // new BN(params.from_token_amount),
+    // new BN(123),
+    // new BN(123),
+    // "sdfs"
+    // );
   });
 
   const onSubmit = (data) => {
