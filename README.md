@@ -34,7 +34,6 @@ Maius Invest is an automation investment dApp with conditional [dollar cost aver
 - Install [nodejs](https://nodejs.org/en/download)
 - Install [clockwork engine](https://github.com/clockwork-xyz/clockwork) locally if you want to test on localnet
 
-## Run the app
 ### Programs and Local Validator
 - Run `anchor build` 
 - Run `anchor keys list` to get the program's IDs
@@ -48,7 +47,7 @@ Maius Invest is an automation investment dApp with conditional [dollar cost aver
 ### Test Client
 - Navigate to the `client` directory
 - Run `cargo run` 
-### App
+### Run the app
 - Navigate to the `app` directory
 - Run `yarn && yarn dev`
 
