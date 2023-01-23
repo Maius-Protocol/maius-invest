@@ -57,7 +57,7 @@ export const CLOCKWORK_NETWORK_PROGRAM_ADDRESS =
 export const HELLO_CLOCKWORK_PROGRAM_ADDRESS =
   "G6JvJ96AEUsjQYaRckUMb4xUCQg1N3Sqy8DTiYnD2nw7";
 export const MAIUS_INVEST_PROGRAM_ADDRESS =
-    "EZgeH8NyKikE796CWWnYQfYJ839piWatDjJzXLJS1FvR";
+    "9N9K872vVcynCq9aSJahizbfL2oarpE2m24aG8ksBbJ8";
 
 // Pubkey utility export
 export const CLOCKWORK_THREAD_PROGRAM_ID = new PublicKey(

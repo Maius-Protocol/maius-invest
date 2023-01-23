@@ -71,7 +71,7 @@ export const useWallet = () => {
 
 export const AnchorProviderProvider = () => {
     let wallet = useWallet();
-    let cluster = CLUSTERS[2];
+    let cluster = CLUSTERS[3];
     const c  = new Connection(cluster.endpoint);
 
     if (!wallet) {

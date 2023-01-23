@@ -33,6 +33,7 @@ fn main() -> ClientResult<()> {
 
     println!("payer: {}", client.payer_pubkey());
     println!("bob: {}", bob.pubkey());
+    println!("anchor dex id: {}", &anchor_spl::dex::ID);
 
     // airdrop a bunch bc it's expensive to setup a dex market and for all of the txs lol
     client.airdrop(&client.payer_pubkey(), 2 * LAMPORTS_PER_SOL)?;
@@ -53,6 +54,10 @@ fn main() -> ClientResult<()> {
         client.payer_pubkey(),
         market_keys.pc_mint,
         market_keys.coin_mint,
+    );
+    let position = maius_invest::state::Position::pubkey(
+        investment,
+        client.payer_pubkey()
     );
     let investment_thread = Thread::pubkey(investment, "investment".to_string());
     print_explorer_link(investment_thread, "investment_thread".to_string())?;
@@ -146,6 +151,7 @@ fn main() -> ClientResult<()> {
     create_investment_and_deposit(
         &client,
         investment,
+        position,
         investment_mint_a_token_account,
         investment_mint_b_token_account,
         investment_thread,
@@ -345,6 +351,7 @@ fn initialize_openbook_crank(
 fn create_investment_and_deposit(
     client: &Client,
     investment: Pubkey,
+    position: Pubkey,
     investment_mint_a_token_account: Pubkey,
     investment_mint_b_token_account: Pubkey,
     investment_thread: Pubkey,
@@ -364,6 +371,7 @@ fn create_investment_and_deposit(
             AccountMeta::new_readonly(thread::ID, false),
             AccountMeta::new_readonly(anchor_spl::dex::ID, false),
             AccountMeta::new(investment, false),
+            AccountMeta::new(position, false),
             AccountMeta::new(investment_mint_a_token_account, false),
             AccountMeta::new(investment_mint_b_token_account, false),
             AccountMeta::new(investment_thread, false),
@@ -388,7 +396,7 @@ fn create_investment_and_deposit(
         data: maius_invest::instruction::CreateInvestment {
             deposit_amount: 1_000_000_000_000_000,
             frequency: 10,
-            end_time: 1674243993,
+            end_time: 1674486414,
             cron_expression: "*/10 * * * * * *".into(),
         }
         .data(),
