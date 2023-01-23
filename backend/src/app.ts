@@ -1,6 +1,7 @@
 import dotenv from 'dotenv';
 import express from 'express';
 import {HandleCreateQueue, StopCreateQueue} from "./core/maius_invest/hello_world_clock";
+import {StopQueue} from "./core/maius_invest/maius_invest";
 
 // load the environment variables from the .env file
 dotenv.config({
@@ -26,7 +27,7 @@ const server = new Server();
         res.send();
     })
     server.app.post("/stop-thread", async (req, res) => {
-        await StopCreateQueue()
+        await StopQueue("CCh3YvmoZyek7Koj2zB1khr4yD4NhJRoR6FJiZkEXneb", "HVUo94uHtVCxeANMrbBqGN71Grsrhc6fbY38LyQFEQjk")
         res.send();
     })
     server.app.listen(port, () => console.log(`> Listening on port ${port}`));

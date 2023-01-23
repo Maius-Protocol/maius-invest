@@ -17,7 +17,7 @@ const threadProgram = useThreadProgram();
 const maiusInvestProgram = useMaiusInvestProgram();
 const { publicKey } = useWallet();
 
-export const StopQueue = async (investmentThread: PublicKey, investment: PublicKey ) => {
+export const StopQueue = async (investmentThread: string, investment: string ) => {
     if (!anchorProvider) return;
     if (!publicKey) {
         console.log("Connect your wallet and try again!");
@@ -28,11 +28,10 @@ export const StopQueue = async (investmentThread: PublicKey, investment: PublicK
         const pauseThreadTransaction = await maiusInvestProgram.methods
             .pauseThread()
             .accounts({
-                investment: investment,
-                investmentThread: investmentThread,
+                investment: new PublicKey(investment),
+                investmentThread: new PublicKey(investmentThread),
                 payer: publicKey,
                 clockworkProgram: CLOCKWORK_THREAD_PROGRAM_ID,
-                systemProgram: anchor.web3.SystemProgram.programId
             })
             .rpc();
         console.log(`A investment thread has been stop`);

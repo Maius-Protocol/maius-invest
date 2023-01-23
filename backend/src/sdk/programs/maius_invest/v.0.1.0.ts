@@ -363,28 +363,18 @@ export type MaiusInvest =  {
             "accounts": [
                 {
                     "name": "investment",
-                    "isMut": false,
+                    "isMut": true,
                     "isSigner": false
                 },
                 {
                     "name": "investmentThread",
-                    "isMut": false,
+                    "isMut": true,
                     "isSigner": false
                 },
                 {
                     "name": "payer",
                     "isMut": true,
                     "isSigner": true
-                },
-                {
-                    "name": "rent",
-                    "isMut": false,
-                    "isSigner": false
-                },
-                {
-                    "name": "systemProgram",
-                    "isMut": false,
-                    "isSigner": false
                 },
                 {
                     "name": "clockworkProgram",
@@ -833,28 +823,18 @@ export const IDL: MaiusInvest = {
             "accounts": [
                 {
                     "name": "investment",
-                    "isMut": false,
+                    "isMut": true,
                     "isSigner": false
                 },
                 {
                     "name": "investmentThread",
-                    "isMut": false,
+                    "isMut": true,
                     "isSigner": false
                 },
                 {
                     "name": "payer",
                     "isMut": true,
                     "isSigner": true
-                },
-                {
-                    "name": "rent",
-                    "isMut": false,
-                    "isSigner": false
-                },
-                {
-                    "name": "systemProgram",
-                    "isMut": false,
-                    "isSigner": false
                 },
                 {
                     "name": "clockworkProgram",
