@@ -30,7 +30,6 @@ fn main() -> ClientResult<()> {
     let payer = Keypair::new();
     let client = Client::new(payer, "http://localhost:8899".into());
     let bob = Keypair::new();
-
     println!("payer: {}", client.payer_pubkey());
     println!("bob: {}", bob.pubkey());
     println!("anchor dex id: {}", &anchor_spl::dex::ID);
@@ -55,11 +54,14 @@ fn main() -> ClientResult<()> {
         market_keys.pc_mint,
         market_keys.coin_mint,
     );
+    println!("investment: {}", investment);
     let position = maius_invest::state::Position::pubkey(
         investment,
         client.payer_pubkey()
     );
+
     let investment_thread = Thread::pubkey(investment, "investment".to_string());
+    println!("investment_thread: {}", investment_thread);
     print_explorer_link(investment_thread, "investment_thread".to_string())?;
 
     // init openbook_crank program
@@ -396,7 +398,7 @@ fn create_investment_and_deposit(
         data: maius_invest::instruction::CreateInvestment {
             deposit_amount: 1_000_000_000_000_000,
             frequency: 10,
-            end_time: 1674486414,
+            end_time: 1674572935,
             cron_expression: "*/10 * * * * * *".into(),
         }
         .data(),

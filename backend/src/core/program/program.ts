@@ -38,7 +38,7 @@ type SolanaContextType = {
     isActiveCluster: (selectedCluster: SolanaCluster) => boolean;
 };
 
-export const LOCALNET_URL = "http://localhost:8899";
+export const LOCALNET_URL = "http://127.0.0.1:8899";
 
 export const CLUSTERS: SolanaCluster[] = [
     {
