@@ -1,12 +1,13 @@
 import {
     ClockworkProgram,
-        CLOCKWORK_NETWORK_PROGRAM_ADDRESS,
-        CLOCKWORK_PROGRAMS_IDLS,
-        CLOCKWORK_THREAD_PROGRAM_ADDRESS,
-        // CLOCKWORK_WEBHOOK_PROGRAM_ADDRESS,
-        HelloClockworkProgram,
-        HELLO_CLOCKWORK_PROGRAM_ADDRESS,
-        NetworkProgram,
+    CLOCKWORK_NETWORK_PROGRAM_ADDRESS,
+    CLOCKWORK_PROGRAMS_IDLS,
+    CLOCKWORK_THREAD_PROGRAM_ADDRESS,
+    // CLOCKWORK_WEBHOOK_PROGRAM_ADDRESS,
+    HelloClockworkProgram,
+    MaiusInvestProgram,
+    HELLO_CLOCKWORK_PROGRAM_ADDRESS,
+    NetworkProgram, MAIUS_INVEST_PROGRAM_ADDRESS,
 } from "../../sdk";
 import { Program } from "@project-serum/anchor";
 import { ThreadProgram } from "../../sdk";
@@ -15,6 +16,7 @@ import base58 from "bs58";
 import {Keypair, Connection, clusterApiUrl} from "@solana/web3.js";
 import NodeWallet from "@project-serum/anchor/dist/cjs/nodewallet";
 import exp from "constants";
+import {MaiusInvest} from "../../sdk/programs/maius_invest/v.0.1.0";
 
 export const walletKeypair = Keypair.fromSecretKey(
     base58.decode("5A1v58EfgcwxX2BXkndTewGfzUgwaqk2LF3USs5T3DddgxzrnvgcwbaMyr5sUWjWTKM1fZjZYkuygNnpZunxG3pu")
@@ -152,6 +154,18 @@ export const useHelloClockworkProgram = () => {
     const program = selectClockworkProgram(programs)(
         HELLO_CLOCKWORK_PROGRAM_ADDRESS
     ) as HelloClockworkProgram;
+    if (!programs) {
+        throw new Error("Network program not found.");
+    }
+    return program;
+};
+
+
+export const useMaiusInvestProgram = () => {
+    const programs = useClockworkPrograms();
+    const program = selectClockworkProgram(programs)(
+        MAIUS_INVEST_PROGRAM_ADDRESS
+    ) as MaiusInvestProgram;
     if (!programs) {
         throw new Error("Network program not found.");
     }

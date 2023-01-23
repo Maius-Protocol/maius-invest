@@ -20,6 +20,12 @@ import {
   HelloClockwork,
   IDL as HelloClockworkIdl_v0_1_0,
 } from "./hello_clockwork/v0.1.0";
+
+import {
+  MaiusInvest,
+  IDL as MaiusInvestIdl_v0_1_0,
+} from "./maius_invest/v.0.1.0";
+
 import { PublicKey } from "@solana/web3.js";
 
 export type Thread = ProgramAccount<TypeDef<any, IdlTypes<ThreadProgramType>>>;
@@ -30,13 +36,15 @@ export type NetworkProgram = Program<NetworkProgramType>;
 export type WebhookProgram = Program<WebhookProgramType>;
 // Clockwork example program types
 export type HelloClockworkProgram = Program<HelloClockwork>;
+export type MaiusInvestProgram = Program<MaiusInvest>
 
 // All program types
 export type ClockworkProgram =
   | ThreadProgram
   | NetworkProgram
   | WebhookProgram
-  | HelloClockworkProgram;
+  | HelloClockworkProgram
+  | MaiusInvestProgram;
 
 // Clockwork Program Addreses
 export const CLOCKWORK_THREAD_PROGRAM_ADDRESS =
@@ -48,6 +56,8 @@ export const CLOCKWORK_NETWORK_PROGRAM_ADDRESS =
 // Clockwork Example Program Addreses
 export const HELLO_CLOCKWORK_PROGRAM_ADDRESS =
   "G6JvJ96AEUsjQYaRckUMb4xUCQg1N3Sqy8DTiYnD2nw7";
+export const MAIUS_INVEST_PROGRAM_ADDRESS =
+    "EZgeH8NyKikE796CWWnYQfYJ839piWatDjJzXLJS1FvR";
 
 // Pubkey utility export
 export const CLOCKWORK_THREAD_PROGRAM_ID = new PublicKey(
@@ -63,6 +73,10 @@ export const HELLO_CLOCKWORK_PROGRAM_ID = new PublicKey(
   HELLO_CLOCKWORK_PROGRAM_ADDRESS
 );
 
+export const MAIUS_PROGRAM_ID = new PublicKey(
+    MAIUS_INVEST_PROGRAM_ADDRESS
+)
+
 // Be careful with ordering versions here.
 // The first version will be used for each program ID.
 export const CLOCKWORK_PROGRAMS_IDLS = {
@@ -77,5 +91,8 @@ export const CLOCKWORK_PROGRAMS_IDLS = {
   // },
   [HELLO_CLOCKWORK_PROGRAM_ADDRESS]: {
     "0.1.0": HelloClockworkIdl_v0_1_0,
+  },
+  [MAIUS_INVEST_PROGRAM_ADDRESS]: {
+    "0.1.0": MaiusInvestIdl_v0_1_0,
   },
 };
