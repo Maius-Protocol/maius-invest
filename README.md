@@ -14,7 +14,7 @@ Maius Invest is an automation investment dApp with conditional [dollar cost aver
 - Maius Invest is in active development and the code is unaudited. Please use at your own risk.
 
 ## Architecture Overview
-<img src="./docs/maius-invest-overview.png" width="605">
+<img src="./docs/maius-invest-overview.png" width="650">
 
 ### Explain
 - User sets the necessary parameters for the DCA (deposit_amount, schedule, pause_event,...) and deposits token into the investment vault.
