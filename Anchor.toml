@@ -2,14 +2,14 @@
 seeds = false
 skip-lint = false
 [programs.localnet]
-maius_invest = "EZgeH8NyKikE796CWWnYQfYJ839piWatDjJzXLJS1FvR"
-openbook_crank = "2BCWsXMC2KPB612DssxTdG4jUH5Z32GAdywUPRsGDtzA"
+maius_invest = "7X2kkXFnHhttekGaCDnZZskfyj6n2Fq47rEzxrX9CSHm"
+openbook_crank = "6823r7f2L5dAqJ77yaRaGJ4mLP55YS6sYPMLqUHrwySj"
 
 [registry]
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "Localnet"
+cluster = "localnet"
 wallet = "~/.config/solana/id.json"
 
 [scripts]
