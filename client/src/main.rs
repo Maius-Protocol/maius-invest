@@ -398,7 +398,7 @@ fn create_investment_and_deposit(
         data: maius_invest::instruction::CreateInvestment {
             deposit_amount: 1_000_000_000_000_000,
             frequency: 10,
-            end_time: 1674572935,
+            end_time: 1675245386,
             cron_expression: "*/10 * * * * * *".into(),
         }
         .data(),

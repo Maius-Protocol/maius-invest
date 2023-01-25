@@ -4,6 +4,8 @@ use {
 };
 
 pub const SEED_CRANK: &[u8] = b"crank";
+pub const CONSUME_EVENTS_ACC_LEN: usize = 8;
+pub const MAX_OPEN_ORDER_ACC_LEN: usize = 5;
 
 /**
  * Crank
