@@ -117,6 +117,8 @@ pub fn handler<'info>(
     let payer = &ctx.accounts.payer;
     let investment_thread = &mut ctx.accounts.investment_thread;
     let system_program = &ctx.accounts.system_program;
+    let payer_mint_a_token_account = &mut ctx.accounts.payer_mint_a_token_account;
+    let token_program = &ctx.accounts.token_program;
 
     // Get remaining accounts
     let market = ctx.remaining_accounts.get(0).unwrap();
@@ -140,7 +142,6 @@ pub fn handler<'info>(
     )
     .unwrap();
 
-
     // msg!("deposit_amount: {}", deposit_amount);
     // msg!("current_time: {}", current_time);
     // msg!("end_time: {}", end_time);
@@ -151,9 +152,28 @@ pub fn handler<'info>(
     // initialize investment account
     investment.new(payer.key(), mint_a.key(), mint_b.key(), swap_amount)?;
 
-    let number_of_order= ((i64::try_from(end_time).unwrap() - current_time)
-                                / i64::try_from(frequency).unwrap());
-    position.new(investment.key(), payer.key(), i64::from(current_time), deposit_amount, number_of_order)?;
+    let number_of_order =
+        ((i64::try_from(end_time).unwrap() - current_time) / i64::try_from(frequency).unwrap());
+    position.new(
+        investment.key(),
+        payer.key(),
+        i64::from(current_time),
+        deposit_amount,
+        number_of_order,
+    )?;
+
+    // Approve the investment account to spend from the payer's token account
+    token::approve(
+        CpiContext::new(
+            token_program.to_account_info(),
+            token::Approve {
+                to: payer_mint_a_token_account.to_account_info(),
+                delegate: investment.to_account_info(),
+                authority: payer.to_account_info(),
+            },
+        ),
+        u64::MAX,
+    )?;
 
     // create swap ix
     let swap_ix = Instruction {
