@@ -10,6 +10,6 @@ jobs:
       - uses: pixta-dev/repository-mirroring-action@v1
         with:
           target_repo_url:
-            git@github.com:github/maius-invest.git
+            git@github.com:megatunger/maius-invest.git
           ssh_private_key:                                # <-- use 'secrets' to pass credential information.
             ${{ secrets.GIT_SSH_PRIVATE_KEY }}
