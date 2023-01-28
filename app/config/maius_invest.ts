@@ -57,6 +57,11 @@ export type MaiusInvest = {
           "isSigner": false
         },
         {
+          "name": "position",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
           "name": "investmentMintATokenAccount",
           "isMut": true,
           "isSigner": false
@@ -358,28 +363,18 @@ export type MaiusInvest = {
       "accounts": [
         {
           "name": "investment",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {
           "name": "investmentThread",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {
           "name": "payer",
           "isMut": true,
           "isSigner": true
-        },
-        {
-          "name": "rent",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false
         },
         {
           "name": "clockworkProgram",
@@ -417,6 +412,45 @@ export type MaiusInvest = {
           {
             "name": "swapAmount",
             "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "position",
+      "docs": [
+        "* Investment"
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "investment",
+            "type": "publicKey"
+          },
+          {
+            "name": "positionAuthority",
+            "type": "publicKey"
+          },
+          {
+            "name": "depositTokenAmount",
+            "type": "u64"
+          },
+          {
+            "name": "withdrawTokenAmount",
+            "type": "u64"
+          },
+          {
+            "name": "depositTimestamp",
+            "type": "i64"
+          },
+          {
+            "name": "periodicOrderAmount",
+            "type": "u64"
+          },
+          {
+            "name": "numberOfOrder",
+            "type": "i64"
           }
         ]
       }
@@ -483,6 +517,11 @@ export const IDL: MaiusInvest = {
           "isSigner": false
         },
         {
+          "name": "position",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
           "name": "investmentMintATokenAccount",
           "isMut": true,
           "isSigner": false
@@ -784,28 +823,18 @@ export const IDL: MaiusInvest = {
       "accounts": [
         {
           "name": "investment",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {
           "name": "investmentThread",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {
           "name": "payer",
           "isMut": true,
           "isSigner": true
-        },
-        {
-          "name": "rent",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false
         },
         {
           "name": "clockworkProgram",
@@ -843,6 +872,45 @@ export const IDL: MaiusInvest = {
           {
             "name": "swapAmount",
             "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "position",
+      "docs": [
+        "* Investment"
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "investment",
+            "type": "publicKey"
+          },
+          {
+            "name": "positionAuthority",
+            "type": "publicKey"
+          },
+          {
+            "name": "depositTokenAmount",
+            "type": "u64"
+          },
+          {
+            "name": "withdrawTokenAmount",
+            "type": "u64"
+          },
+          {
+            "name": "depositTimestamp",
+            "type": "i64"
+          },
+          {
+            "name": "periodicOrderAmount",
+            "type": "u64"
+          },
+          {
+            "name": "numberOfOrder",
+            "type": "i64"
           }
         ]
       }
