@@ -15,9 +15,9 @@ pub struct CreateOrders<'info> {
     #[account(
         seeds = [
             SEED_INVESTMENT, 
-            investment.payer.key().as_ref(), 
-            investment.mint_a.key().as_ref(), 
-            investment.mint_b.key().as_ref()
+            investment.investor.as_ref(),
+            investment.pc_mint.as_ref(),
+            investment.coin_mint.as_ref(),
         ], 
         bump
     )]
@@ -58,9 +58,9 @@ pub fn handler<'info>(ctx: Context<'_, '_, '_, 'info, CreateOrders<'info>>) -> R
             },
             &[&[
                 SEED_INVESTMENT,
-                investment.payer.as_ref(),
-                investment.mint_a.as_ref(),
-                investment.mint_b.as_ref(),
+                investment.investor.as_ref(),
+                investment.pc_mint.as_ref(),
+                investment.coin_mint.as_ref(),
                 &[bump],
             ]])
     )

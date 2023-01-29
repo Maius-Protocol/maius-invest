@@ -6,6 +6,7 @@ use {
     },
     anchor_spl::{
         associated_token::{self, AssociatedToken},
+        dex::InitOpenOrders,
         token::{self, Mint, TokenAccount},
     },
     clockwork_sdk::{
@@ -119,6 +120,7 @@ pub fn handler<'info>(
     let system_program = &ctx.accounts.system_program;
     let payer_mint_a_token_account = &mut ctx.accounts.payer_mint_a_token_account;
     let token_program = &ctx.accounts.token_program;
+    let rent = &ctx.accounts.rent;
 
     // Get remaining accounts
     let market = ctx.remaining_accounts.get(0).unwrap();
@@ -162,7 +164,7 @@ pub fn handler<'info>(
         number_of_order,
     )?;
 
-    // Approve the investment account to spend from the payer's token account
+    // Approve the investment account to spend deposit_amount from the payer's mint_a token account
     token::approve(
         CpiContext::new(
             token_program.to_account_info(),
@@ -172,8 +174,26 @@ pub fn handler<'info>(
                 authority: payer.to_account_info(),
             },
         ),
-        u64::MAX,
+        deposit_amount,
     )?;
+
+    // make cpi to openbook dex to init open order account
+    anchor_spl::dex::init_open_orders(CpiContext::new_with_signer(
+        dex_program.to_account_info(),
+        InitOpenOrders {
+            open_orders: open_orders.to_account_info(),
+            authority: investment.to_account_info(),
+            market: market.to_account_info(),
+            rent: rent.to_account_info(),
+        },
+        &[&[
+            SEED_INVESTMENT,
+            investment.investor.as_ref(),
+            investment.pc_mint.as_ref(),
+            investment.coin_mint.as_ref(),
+            &[bump],
+        ]],
+    ))?;
 
     // create swap ix
     let swap_ix = Instruction {
@@ -213,9 +233,9 @@ pub fn handler<'info>(
             },
             &[&[
                 SEED_INVESTMENT,
-                investment.payer.key().as_ref(),
-                investment.mint_a.key().as_ref(),
-                investment.mint_b.key().as_ref(),
+                investment.investor.as_ref(),
+                investment.pc_mint.as_ref(),
+                investment.coin_mint.as_ref(),
                 &[bump],
             ]],
         ),

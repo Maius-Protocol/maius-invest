@@ -13,33 +13,33 @@ pub struct Claim<'info> {
     #[account(
         seeds = [
             SEED_INVESTMENT, 
-            investment.payer.key().as_ref(), 
-            investment.mint_a.key().as_ref(), 
-            investment.mint_b.key().as_ref()
+            investment.investor.as_ref(),
+            investment.pc_mint.as_ref(),
+            investment.coin_mint.as_ref(),
         ], 
         bump,
-        has_one = payer,
-        has_one = mint_b
+        has_one = investor,
+        has_one = coin_mint
     )]
     pub investment: Account<'info, Investment>,
 
     #[account(
         mut,
         associated_token::authority = investment,
-        associated_token::mint = investment.mint_b,
+        associated_token::mint = investment.coin_mint,
     )]
     pub investment_mint_b_token_account: Account<'info, TokenAccount>,
 
     #[account()]
-    pub mint_b: Account<'info, Mint>,
+    pub coin_mint: Account<'info, Mint>,
 
     #[account(mut)]
-    pub payer: Signer<'info>,
+    pub investor: Signer<'info>,
 
     #[account(
         mut,
-        associated_token::authority = investment.payer,
-        associated_token::mint = investment.mint_b,
+        associated_token::authority = investment.investor,
+        associated_token::mint = investment.coin_mint,
     )]
     pub payer_mint_b_token_account: Account<'info, TokenAccount>,
 
@@ -77,9 +77,9 @@ pub fn handler<'info>(ctx: Context<'_, '_, '_, 'info, Claim<'info>>, amount: u64
             },
             &[&[
                 SEED_INVESTMENT,
-                investment.payer.as_ref(),
-                investment.mint_a.as_ref(),
-                investment.mint_b.as_ref(),
+                investment.investor.as_ref(),
+                investment.pc_mint.as_ref(),
+                investment.coin_mint.as_ref(),
                 &[bump],
             ]]
         ),
