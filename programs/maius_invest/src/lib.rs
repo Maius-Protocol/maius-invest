@@ -39,9 +39,8 @@ pub mod maius_invest {
      */
     pub fn deposit<'info>(
         ctx: Context<'_, '_, '_, 'info, Deposit<'info>>,
-        amount: u64,
-    ) -> Result<()> {
-        deposit::handler(ctx, amount)
+    ) -> Result<clockwork_sdk::state::ThreadResponse> {
+        deposit::handler(ctx)
     }
 
     /*
