@@ -1,14 +1,8 @@
 
 use {
     crate::state::{Investment, SEED_INVESTMENT},
-    crate::state::*,
     anchor_lang::{
         prelude::*,
-        solana_program::{system_program, sysvar},
-    },
-    anchor_spl::{
-        associated_token::AssociatedToken,
-        token::{self, Mint, TokenAccount, Transfer},
     },
     clockwork_sdk::state::{ThreadResponse, Thread},
     clockwork_sdk::{
@@ -16,16 +10,15 @@ use {
     }
 };
 
-
 #[derive(Accounts)]
 pub struct PauseThread<'info> {
     #[account(
         mut,
         seeds = [
             SEED_INVESTMENT,
-            investment.payer.key().as_ref(),
-            investment.mint_a.key().as_ref(),
-            investment.mint_b.key().as_ref()
+            investment.investor.key().as_ref(),
+            investment.pc_mint.as_ref(),
+            investment.coin_mint.as_ref(),
         ],
         bump,
     )]
@@ -55,9 +48,9 @@ pub fn handler(ctx: Context<PauseThread>) -> Result<ThreadResponse> {
         },
         &[&[
             SEED_INVESTMENT,
-            investment.payer.as_ref(),
-            investment.mint_a.as_ref(),
-            investment.mint_b.as_ref(),
+            investment.investor.as_ref(),
+            investment.pc_mint.as_ref(),
+            investment.coin_mint.as_ref(),
             &[bump],
         ]],
     ))?;

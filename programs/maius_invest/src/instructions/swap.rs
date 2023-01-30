@@ -30,9 +30,9 @@ pub struct Swap<'info> {
     #[account(
         seeds = [
             SEED_INVESTMENT,
-            investment.payer.key().as_ref(),
-            investment.mint_a.key().as_ref(),
-            investment.mint_b.key().as_ref()
+            investment.investor.key().as_ref(),
+            investment.pc_mint.key().as_ref(),
+            investment.coin_mint.key().as_ref()
         ],
         bump,
     )]
@@ -41,7 +41,7 @@ pub struct Swap<'info> {
     #[account(
         mut,
         associated_token::authority = investment,
-        associated_token::mint = investment.mint_a
+        associated_token::mint = investment.pc_mint
     )]
     pub investment_mint_a_token_account: Box<Account<'info, TokenAccount>>,
 
@@ -107,9 +107,9 @@ pub fn handler<'info>(ctx: Context<'_, '_, '_, 'info, Swap<'info>>) -> Result<Th
             },
             &[&[
                 SEED_INVESTMENT,
-                investment.payer.as_ref(),
-                investment.mint_a.as_ref(),
-                investment.mint_b.as_ref(),
+                investment.investor.as_ref(),
+                investment.pc_mint.as_ref(),
+                investment.coin_mint.as_ref(),
                 &[bump],
             ]],
         ),
