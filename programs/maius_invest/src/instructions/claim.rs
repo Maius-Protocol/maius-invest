@@ -28,7 +28,7 @@ pub struct Claim<'info> {
         associated_token::authority = investment,
         associated_token::mint = investment.coin_mint,
     )]
-    pub investment_mint_b_token_account: Account<'info, TokenAccount>,
+    pub investment_coin_vault: Account<'info, TokenAccount>,
 
     #[account()]
     pub coin_mint: Account<'info, Mint>,
@@ -41,7 +41,7 @@ pub struct Claim<'info> {
         associated_token::authority = investment.investor,
         associated_token::mint = investment.coin_mint,
     )]
-    pub payer_mint_b_token_account: Account<'info, TokenAccount>,
+    pub investor_coin_vault: Account<'info, TokenAccount>,
 
     #[account(address = sysvar::rent::ID)]
     pub rent: Sysvar<'info, Rent>,
@@ -59,8 +59,8 @@ pub struct Claim<'info> {
 pub fn handler<'info>(ctx: Context<'_, '_, '_, 'info, Claim<'info>>, amount: u64) -> Result<()> {
     // Get accounts
     let investment = &ctx.accounts.investment;
-    let investment_mint_b_token_account = &mut ctx.accounts.investment_mint_b_token_account;
-    let payer_mint_b_token_account = &mut ctx.accounts.payer_mint_b_token_account;
+    let investment_coin_vault = &mut ctx.accounts.investment_coin_vault;
+    let investor_coin_vault = &mut ctx.accounts.investor_coin_vault;
     let token_program = &ctx.accounts.token_program;
 
     // get investment bump
@@ -71,8 +71,8 @@ pub fn handler<'info>(ctx: Context<'_, '_, '_, 'info, Claim<'info>>, amount: u64
         CpiContext::new_with_signer(
             token_program.to_account_info(),
             Transfer {
-                from: investment_mint_b_token_account.to_account_info(),
-                to: payer_mint_b_token_account.to_account_info(),
+                from: investment_coin_vault.to_account_info(),
+                to: investor_coin_vault.to_account_info(),
                 authority: investment.to_account_info(),
             },
             &[&[
