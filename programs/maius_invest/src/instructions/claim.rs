@@ -66,7 +66,7 @@ pub fn handler<'info>(ctx: Context<'_, '_, '_, 'info, Claim<'info>>, amount: u64
     // get investment bump
     let bump = *ctx.bumps.get("investment").unwrap();
 
-    // claim token b after swap from escrow token account
+    // claim coin_mint token after swap from investment's coin vault to investor's coin vault
     token::transfer(
         CpiContext::new_with_signer(
             token_program.to_account_info(),
