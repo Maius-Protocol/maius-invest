@@ -1,11 +1,12 @@
 use {
     crate::state::{Investment, SEED_INVESTMENT},
     anchor_lang::{
+        __private::bytemuck::Contiguous,
         prelude::*,
-        solana_program::{system_program, sysvar},
+        solana_program::{instruction::Instruction, system_program, sysvar},
     },
     anchor_spl::{
-        associated_token::AssociatedToken,
+        associated_token::get_associated_token_address,
         dex::{
             serum_dex::{
                 instruction::SelfTradeBehavior,
@@ -21,9 +22,6 @@ use {
 
 #[derive(Accounts)]
 pub struct Swap<'info> {
-    #[account(address = anchor_spl::associated_token::ID)]
-    pub associated_token_program: Program<'info, AssociatedToken>,
-
     #[account(address = anchor_spl::dex::ID)]
     pub dex_program: Program<'info, anchor_spl::dex::Dex>,
 
@@ -43,16 +41,13 @@ pub struct Swap<'info> {
         associated_token::authority = investment,
         associated_token::mint = investment.pc_mint
     )]
-    pub investment_mint_a_token_account: Box<Account<'info, TokenAccount>>,
+    pub investment_pc_vault: Box<Account<'info, TokenAccount>>,
 
     #[account(
+        signer,
         address = investment_thread.pubkey(),
-        constraint = investment_thread.id.eq("investment")
     )]
     pub investment_thread: Box<Account<'info, Thread>>,
-
-    #[account(mut)]
-    pub payer: Signer<'info>,
 
     #[account(address = sysvar::rent::ID)]
     pub rent: Sysvar<'info, Rent>,
@@ -68,14 +63,15 @@ pub fn handler<'info>(ctx: Context<'_, '_, '_, 'info, Swap<'info>>) -> Result<Th
     // get accounts
     let dex_program = &ctx.accounts.dex_program;
     let investment = &ctx.accounts.investment;
-    let investment_mint_a_token_account = &mut ctx.accounts.investment_mint_a_token_account;
+    let investment_pc_vault = &mut ctx.accounts.investment_pc_vault;
+    let investment_thread = &ctx.accounts.investment_thread;
     let rent = &ctx.accounts.rent;
     let token_program = &ctx.accounts.token_program;
 
     // get remaining accounts
     let market = ctx.remaining_accounts.get(0).unwrap();
-    let mint_a_vault = ctx.remaining_accounts.get(1).unwrap();
-    let mint_b_vault = ctx.remaining_accounts.get(2).unwrap();
+    let pc_vault = ctx.remaining_accounts.get(1).unwrap();
+    let coin_vault = ctx.remaining_accounts.get(2).unwrap();
     let request_queue = ctx.remaining_accounts.get(3).unwrap();
     let event_queue = ctx.remaining_accounts.get(4).unwrap();
     let market_bids = ctx.remaining_accounts.get(5).unwrap();
@@ -98,10 +94,10 @@ pub fn handler<'info>(ctx: Context<'_, '_, '_, 'info, Swap<'info>>) -> Result<Th
                 event_queue: event_queue.to_account_info(),
                 market_bids: market_bids.to_account_info(),
                 market_asks: market_asks.to_account_info(),
-                order_payer_token_account: investment_mint_a_token_account.to_account_info(),
+                order_payer_token_account: investment_pc_vault.to_account_info(),
                 open_orders_authority: investment.to_account_info(),
-                coin_vault: mint_b_vault.to_account_info(),
-                pc_vault: mint_a_vault.to_account_info(),
+                coin_vault: coin_vault.to_account_info(),
+                pc_vault: pc_vault.to_account_info(),
                 token_program: token_program.to_account_info(),
                 rent: rent.to_account_info(),
             },
@@ -114,8 +110,8 @@ pub fn handler<'info>(ctx: Context<'_, '_, '_, 'info, Swap<'info>>) -> Result<Th
             ]],
         ),
         Side::Bid,
-        NonZeroU64::new(500).unwrap(),
-        NonZeroU64::new(1_000).unwrap(),
+        NonZeroU64::new(NonZeroU64::MAX_VALUE).unwrap(),
+        NonZeroU64::new(NonZeroU64::MAX_VALUE).unwrap(),
         NonZeroU64::new(investment.swap_amount).unwrap(),
         SelfTradeBehavior::DecrementTake,
         OrderType::Limit,
@@ -123,9 +119,37 @@ pub fn handler<'info>(ctx: Context<'_, '_, '_, 'info, Swap<'info>>) -> Result<Th
         std::u16::MAX,
     )?;
 
-    // return None
+    let investor_pc_vault = get_associated_token_address(&investment.investor, &investment.pc_mint);
+
+    let deposit_account_metas = vec![
+        AccountMeta::new_readonly(investment.pc_mint, false),
+        AccountMeta::new_readonly(investment.coin_mint, false),
+        AccountMeta::new_readonly(investment.key(), false),
+        AccountMeta::new(investment_pc_vault.key(), false),
+        AccountMeta::new(investor_pc_vault.key(), false),
+        AccountMeta::new_readonly(investment_thread.key(), true),
+        AccountMeta::new_readonly(system_program::ID, false),
+        AccountMeta::new_readonly(token_program.key(), false),
+        // Extra accounts
+        AccountMeta::new(market.key(), false),
+        AccountMeta::new(pc_vault.key(), false),
+        AccountMeta::new(coin_vault.key(), false),
+        AccountMeta::new(request_queue.key(), false),
+        AccountMeta::new(event_queue.key(), false),
+        AccountMeta::new(market_bids.key(), false),
+        AccountMeta::new(market_asks.key(), false),
+        AccountMeta::new(open_orders.key(), false),
+    ];
+
     Ok(ThreadResponse {
-        kickoff_instruction: None,
+        kickoff_instruction: Some(
+            Instruction {
+                program_id: crate::ID,
+                accounts: deposit_account_metas,
+                data: clockwork_sdk::utils::anchor_sighash("deposit").into(),
+            }
+            .into(),
+        ),
         next_instruction: None,
     })
 }

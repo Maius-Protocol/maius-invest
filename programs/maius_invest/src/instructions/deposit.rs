@@ -2,56 +2,53 @@ use {
     crate::state::*,
     anchor_lang::{
         prelude::*,
-        solana_program::{system_program, sysvar},
+        solana_program::{instruction::Instruction, system_program, sysvar},
     },
-    anchor_spl::{
-        associated_token::AssociatedToken,
-        token::{self, Mint, TokenAccount, Transfer},
-    },
+    anchor_spl::token::{self, Mint, TokenAccount, Transfer},
+    clockwork_sdk::state::{Thread, ThreadAccount, ThreadResponse},
 };
 
 #[derive(Accounts)]
 #[instruction(amount: u64)]
 pub struct Deposit<'info> {
-    #[account(
-        mut,
-        associated_token::mint = investment.pc_mint,
-        associated_token::authority = investment.investor,
-    )]
-    pub authority_pc_vault: Account<'info, TokenAccount>,
+    #[account()]
+    pub pc_mint: Account<'info, Mint>,
 
-    #[account(address = anchor_spl::associated_token::ID)]
-    pub associated_token_program: Program<'info, AssociatedToken>,
+    #[account()]
+    pub coin_mint: Account<'info, Mint>,
 
     #[account(
-        address = Investment::pubkey(investment.investor, investment.pc_mint, investment.coin_mint),
-        has_one = investor,
-        has_one = pc_mint
+        seeds = [
+            SEED_INVESTMENT,
+            investment.investor.as_ref(),
+            investment.pc_mint.as_ref(),
+            investment.coin_mint.as_ref(),
+        ],
+        bump,
+        has_one = pc_mint,
+        has_one = coin_mint,
     )]
     pub investment: Account<'info, Investment>,
 
     #[account(
         mut,
+        associated_token::mint = pc_mint,
         associated_token::authority = investment,
-        associated_token::mint = pc_mint
     )]
-    pub investment_mint_a_token_account: Account<'info, TokenAccount>,
-
-    #[account()]
-    pub pc_mint: Account<'info, Mint>,
-
-    #[account(mut)]
-    pub investor: Signer<'info>,
+    pub investment_pc_vault: Account<'info, TokenAccount>,
 
     #[account(
         mut,
-        associated_token::authority = investor,
-        associated_token::mint = pc_mint
+        associated_token::mint = investment.pc_mint,
+        associated_token::authority = investment.investor,
     )]
-    pub payer_mint_a_token_account: Account<'info, TokenAccount>,
+    pub investor_pc_vault: Account<'info, TokenAccount>,
 
-    #[account(address = sysvar::rent::ID)]
-    pub rent: Sysvar<'info, Rent>,
+    #[account(
+        signer,
+        address = investment_thread.pubkey(),
+    )]
+    pub investment_thread: Account<'info, Thread>,
 
     #[account(address = system_program::ID)]
     pub system_program: Program<'info, System>,
@@ -60,25 +57,66 @@ pub struct Deposit<'info> {
     pub token_program: Program<'info, anchor_spl::token::Token>,
 }
 
-pub fn handler<'info>(ctx: Context<'_, '_, '_, 'info, Deposit<'info>>, amount: u64) -> Result<()> {
+pub fn handler<'info>(ctx: Context<'_, '_, '_, 'info, Deposit<'info>>) -> Result<ThreadResponse> {
     // get accounts
-    let investment_mint_a_token_account = &mut ctx.accounts.investment_mint_a_token_account;
-    let payer = &ctx.accounts.investor;
-    let payer_mint_a_token_account = &mut ctx.accounts.payer_mint_a_token_account;
+    let investment = &ctx.accounts.investment;
+    let investor_pc_vault = &mut ctx.accounts.investor_pc_vault;
+    let investment_pc_vault = &mut ctx.accounts.investment_pc_vault;
+    let investment_thread = &ctx.accounts.investment_thread;
+    let system_program = &ctx.accounts.system_program;
     let token_program = &ctx.accounts.token_program;
 
-    // deposit funds from sender's token account to escrow token account
+    // get investment bump
+    let bump = *ctx.bumps.get("investment").unwrap();
+
+    // make transfer ix from investor's pc_vault to investment's pc_vault
+    // after delegating fund from investor to investment vault
     token::transfer(
-        CpiContext::new(
+        CpiContext::new_with_signer(
             token_program.to_account_info(),
             Transfer {
-                from: payer_mint_a_token_account.to_account_info(),
-                to: investment_mint_a_token_account.to_account_info(),
-                authority: payer.to_account_info(),
+                from: investor_pc_vault.to_account_info(),
+                to: investment_pc_vault.to_account_info(),
+                authority: investment.to_account_info(),
             },
+            &[&[
+                SEED_INVESTMENT,
+                investment.investor.as_ref(),
+                investment.pc_mint.as_ref(),
+                investment.coin_mint.as_ref(),
+                &[bump],
+            ]],
         ),
-        amount,
+        investment.swap_amount,
     )?;
 
-    Ok(())
+    let mut swap_account_metas = vec![
+        AccountMeta::new_readonly(anchor_spl::dex::ID, false),
+        AccountMeta::new_readonly(investment.key(), false),
+        AccountMeta::new(investment_pc_vault.key(), false),
+        AccountMeta::new_readonly(investment_thread.key(), true),
+        AccountMeta::new_readonly(sysvar::rent::ID, false),
+        AccountMeta::new_readonly(system_program.key(), false),
+        AccountMeta::new_readonly(token_program.key(), false),
+    ];
+
+    let mut remaining_account_metas = ctx
+        .remaining_accounts
+        .iter()
+        .map(|acc| AccountMeta::new(acc.key(), false))
+        .collect::<Vec<AccountMeta>>();
+
+    swap_account_metas.append(&mut remaining_account_metas);
+
+    Ok(ThreadResponse {
+        kickoff_instruction: None,
+        next_instruction: Some(
+            Instruction {
+                program_id: crate::ID,
+                accounts: swap_account_metas,
+                data: clockwork_sdk::utils::anchor_sighash("swap").into(),
+            }
+            .into(),
+        ),
+    })
 }
