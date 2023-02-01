@@ -69,7 +69,8 @@ pub fn handler<'info>(ctx: Context<'_, '_, '_, 'info, Deposit<'info>>) -> Result
     // get investment bump
     let bump = *ctx.bumps.get("investment").unwrap();
 
-    // make transfer ix after delegating fund from investor to investment vault
+    // make transfer ix from investor's pc_vault to investment's pc_vault
+    // after delegating fund from investor to investment vault
     token::transfer(
         CpiContext::new_with_signer(
             token_program.to_account_info(),
