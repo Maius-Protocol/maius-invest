@@ -48,7 +48,7 @@ pub struct Deposit<'info> {
         signer,
         address = investment_thread.pubkey(),
     )]
-    pub investment_thread: Account<'info, Thread>,
+    pub investment_thread: Box<Account<'info, Thread>>,
 
     #[account(address = system_program::ID)]
     pub system_program: Program<'info, System>,

@@ -5,7 +5,7 @@ use {
         solana_program::{system_program, sysvar},
     },
     anchor_spl::{
-        token::{self, Mint, TokenAccount, Transfer}, 
+        token::{self, Mint, TokenAccount, Transfer},
         dex::{self, SettleFunds}
     },
 };
@@ -18,11 +18,11 @@ pub struct Claim<'info> {
 
     #[account(
         seeds = [
-            SEED_INVESTMENT, 
+            SEED_INVESTMENT,
             investment.investor.as_ref(),
             investment.pc_mint.as_ref(),
             investment.coin_mint.as_ref(),
-        ], 
+        ],
         bump,
         has_one = investor,
         has_one = coin_mint
@@ -52,6 +52,7 @@ pub struct Claim<'info> {
     #[account(address = sysvar::rent::ID)]
     pub rent: Sysvar<'info, Rent>,
 
+    /// CHECK: This is not dangerous because we don't read or write from this account
     #[account(mut)]
     pub market: AccountInfo<'info>,
 
@@ -70,7 +71,7 @@ pub fn handler<'info>(ctx: Context<'_, '_, '_, 'info, Claim<'info>>, amount: u64
     let investment_coin_vault = &mut ctx.accounts.investment_coin_vault;
     let investor_coin_vault = &mut ctx.accounts.investor_coin_vault;
     let token_program = &ctx.accounts.token_program;
-    
+
     // Get remaining accounts
     let pc_vault = ctx.remaining_accounts.get(0).unwrap();
     let pc_wallet = ctx.remaining_accounts.get(1).unwrap();
