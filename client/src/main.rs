@@ -55,10 +55,7 @@ fn main() -> ClientResult<()> {
         market_keys.coin_mint,
     );
     println!("investment: {}", investment);
-    let position = maius_invest::state::Position::pubkey(
-        investment,
-        client.payer_pubkey()
-    );
+    let position = maius_invest::state::Position::pubkey(investment, client.payer_pubkey());
 
     let investment_thread = Thread::pubkey(investment, "investment".to_string());
     println!("investment_thread: {}", investment_thread);
@@ -595,5 +592,72 @@ pub fn place_order(
     signers.push(client.payer());
 
     sign_send_and_confirm_tx(client, instructions, Some(signers), "place_order".into())?;
+    Ok(())
+}
+
+fn create_investment(
+    client: &Client,
+    investment: Pubkey,
+    market_keys: &MarketKeys,
+    investment_thread_id: String,
+    claim_thread_id: String,
+) -> ClientResult<()> {
+    let mut investment_open_orders_account = None;
+    init_dex_account(client, &mut investment_open_orders_account)?;
+
+    let investment_thread = Thread::pubkey(client.payer_pubkey(), investment_thread_id.clone());
+    let claim_thread = Thread::pubkey(client.payer_pubkey(), claim_thread_id.clone());
+
+    let investor_pc_vault = anchor_spl::associated_token::get_associated_token_address(
+        &client.payer_pubkey(),
+        &market_keys.pc_mint,
+    );
+
+    let investor_coin_vault = anchor_spl::associated_token::get_associated_token_address(
+        &client.payer_pubkey(),
+        &market_keys.coin_mint,
+    );
+
+    let investment_pc_vault = anchor_spl::associated_token::get_associated_token_address(
+        &investment,
+        &market_keys.pc_mint,
+    );
+
+    let investment_coin_vault = anchor_spl::associated_token::get_associated_token_address(
+        &investment,
+        &market_keys.coin_mint,
+    );
+
+    let position = maius_invest::state::Position::pubkey(investment, client.payer_pubkey());
+
+    let create_investment_ix = Instruction {
+        program_id: maius_invest::ID,
+        accounts: vec![
+            AccountMeta::new_readonly(associated_token::ID, false),
+            AccountMeta::new_readonly(thread::ID, false),
+            AccountMeta::new_readonly(anchor_spl::dex::ID, false),
+            AccountMeta::new(investment, false),
+            AccountMeta::new(position, false),
+            AccountMeta::new(investment_pc_vault, false),
+            AccountMeta::new(investment_coin_vault, false),
+            AccountMeta::new_readonly(investment_thread, false),
+            AccountMeta::new_readonly(market_keys.pc_mint, false),
+            AccountMeta::new_readonly(market_keys.coin_mint, false),
+            AccountMeta::new(client.payer_pubkey(), true),
+            AccountMeta::new(investor_pc_vault, false),
+            AccountMeta::new(investor_coin_vault, false),
+            AccountMeta::new_readonly(sysvar::rent::ID, false),
+            AccountMeta::new_readonly(system_program::ID, false),
+            AccountMeta::new_readonly(token::ID, false),
+        ],
+        data: maius_invest::instruction::CreateInvestment {
+            deposit_amount: 1_000_000_000_000_000,
+            frequency: 10,
+            end_time: 1675245386,
+            cron_expression: "*/10 * * * * * *".into(),
+        }
+        .data(),
+    };
+
     Ok(())
 }
