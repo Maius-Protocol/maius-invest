@@ -8,6 +8,7 @@ use {
         token::{self, Mint, TokenAccount, Transfer},
         dex::{self, SettleFunds}
     },
+    clockwork_sdk::state::{Thread, ThreadAccount},
 };
 
 #[derive(Accounts)]
@@ -39,15 +40,21 @@ pub struct Claim<'info> {
     #[account()]
     pub coin_mint: Account<'info, Mint>,
 
-    #[account(mut)]
-    pub investor: Signer<'info>,
-
+    #[account(
+        signer,
+        address = investment_thread.pubkey(),
+    )]
+    pub investment_thread: Account<'info, Thread>,
+    
     #[account(
         mut,
         associated_token::authority = investment.investor,
         associated_token::mint = investment.coin_mint,
     )]
     pub investor_coin_vault: Account<'info, TokenAccount>,
+
+    #[account()]
+    pub investor: Signer<'info>,
 
     #[account(address = sysvar::rent::ID)]
     pub rent: Sysvar<'info, Rent>,
@@ -63,7 +70,7 @@ pub struct Claim<'info> {
     pub token_program: Program<'info, anchor_spl::token::Token>,
 }
 
-pub fn handler<'info>(ctx: Context<'_, '_, '_, 'info, Claim<'info>>, amount: u64) -> Result<()> {
+pub fn handler<'info>(ctx: Context<'_, '_, '_, 'info, Claim<'info>>) -> Result<()> {
     // Get accounts
     let dex_program = &ctx.accounts.dex_program;
     let market = &mut ctx.accounts.market;
@@ -123,7 +130,7 @@ pub fn handler<'info>(ctx: Context<'_, '_, '_, 'info, Claim<'info>>, amount: u64
                 &[bump],
             ]]
         ),
-        amount,
+        investment.swap_amount,
     )?;
 
     Ok(())

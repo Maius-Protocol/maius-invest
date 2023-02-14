@@ -243,23 +243,25 @@ fn setup_market(client: &Client) -> ClientResult<MarketKeys> {
     )?;
 
     // create wallets to then mint to
-    let coin_wallet_key = mint_to_new_account(
+    let coin_wallet = mint_to_new_account(
         &client,
         &client.payer(),
         &client.payer(),
         &coin_mint,
         1_000_000_000_000_000,
     )
-    .unwrap();
+    .unwrap()
+    .pubkey();
 
-    let pc_wallet_key = mint_to_new_account(
+    let pc_wallet = mint_to_new_account(
         &client,
         &client.payer(),
         &client.payer(),
         &pc_mint,
         1_000_000_000_000_000,
     )
-    .unwrap();
+    .unwrap()
+    .pubkey();
 
     Ok(MarketKeys {
         market: market_key.pubkey(),
@@ -272,8 +274,8 @@ fn setup_market(client: &Client) -> ClientResult<MarketKeys> {
         pc_mint,
         pc_vault,
         vault_signer,
-        pc_wallet_key,
-        coin_wallet_key,
+        pc_wallet,
+        coin_wallet,
     })
 }
 
@@ -658,6 +660,78 @@ fn create_investment(
         }
         .data(),
     };
+
+    let thread_create_deposit_ix = thread_create(
+        client.payer_pubkey(),
+        investment_thread_id,
+        Instruction {
+            program_id: maius_invest::ID,
+            accounts: vec![
+                AccountMeta::new_readonly(market_keys.pc_mint, false),
+                AccountMeta::new_readonly(market_keys.coin_mint, false),
+                AccountMeta::new(investment, false),
+                AccountMeta::new(investment_pc_vault, false),
+                AccountMeta::new(investor_pc_vault, false),
+                AccountMeta::new_readonly(investment_thread, true),
+                AccountMeta::new_readonly(system_program::ID, false),
+                AccountMeta::new_readonly(token::ID, false),
+                // Extra accounts
+                AccountMeta::new(market_keys.market, false),
+                AccountMeta::new(market_keys.pc_vault, false),
+                AccountMeta::new(market_keys.coin_vault, false),
+                AccountMeta::new(market_keys.req_q, false),
+                AccountMeta::new(market_keys.event_q, false),
+                AccountMeta::new(market_keys.bids, false),
+                AccountMeta::new(market_keys.asks, false),
+                AccountMeta::new(investment_open_orders_account.unwrap(), false),
+            ],
+            data: maius_invest::instruction::Deposit {}.data(),
+        }
+        .into(),
+        client.payer_pubkey(),
+        investment_thread,
+        Trigger::Cron {
+            schedule: "*/10 * * * * * *".into(),
+            skippable: true,
+        },
+    );
+
+    let thread_create_claim_ix = thread_create(
+        client.payer_pubkey(),
+        claim_thread_id,
+        Instruction {
+            program_id: maius_invest::ID,
+            accounts: vec![
+                AccountMeta::new_readonly(anchor_spl::dex::ID, false),
+                AccountMeta::new(investment, false),
+                AccountMeta::new(investment_coin_vault, false),
+                AccountMeta::new_readonly(market_keys.coin_mint, false),
+                AccountMeta::new(investment_thread, true),
+                AccountMeta::new(investor_coin_vault, false),
+                AccountMeta::new_readonly(client.payer_pubkey(), false),
+                AccountMeta::new_readonly(sysvar::rent::ID, false),
+                AccountMeta::new(market_keys.market, false),
+                AccountMeta::new_readonly(system_program::ID, false),
+                AccountMeta::new_readonly(token::ID, false),
+                // Extra accounts
+                AccountMeta::new(market_keys.pc_vault, false),
+                AccountMeta::new(market_keys.pc_wallet, false),
+                AccountMeta::new(market_keys.coin_vault, false),
+                AccountMeta::new(market_keys.coin_wallet, false),
+                AccountMeta::new(investment_open_orders_account.unwrap(), false),
+                AccountMeta::new(market_keys.vault_signer, false),
+            ],
+            data: maius_invest::instruction::Claim {}.data(),
+        }
+        .into(),
+        client.payer_pubkey(),
+        claim_thread,
+        Trigger::Account {
+            address: investment_open_orders_account.unwrap(),
+            offset: 8 + 8 + 32 + 32 + 8,
+            size: 8,
+        },
+    );
 
     Ok(())
 }
