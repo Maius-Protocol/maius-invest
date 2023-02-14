@@ -56,8 +56,8 @@ pub mod maius_invest {
     /*
      * withdraw from investment mint B token account
      */
-    pub fn claim<'info>(ctx: Context<'_, '_, '_, 'info, Claim<'info>>, amount: u64) -> Result<()> {
-        claim::handler(ctx, amount)
+    pub fn claim<'info>(ctx: Context<'_, '_, '_, 'info, Claim<'info>>) -> Result<()> {
+        claim::handler(ctx)
     }
 
     /*

@@ -61,7 +61,7 @@ pub fn print_market_keys(market_keys: &MarketKeys) -> ClientResult<()> {
     println!(
         "{}: https://explorer.solana.com/address/{}?cluster=custom",
         "mint_a_wallet".to_string(),
-        market_keys.pc_wallet_key.pubkey()
+        market_keys.pc_wallet
     );
     println!(
         "{}: https://explorer.solana.com/address/{}?cluster=custom",
@@ -71,7 +71,7 @@ pub fn print_market_keys(market_keys: &MarketKeys) -> ClientResult<()> {
     println!(
         "{}: https://explorer.solana.com/address/{}?cluster=custom",
         "mint_b_wallet".to_string(),
-        market_keys.coin_wallet_key.pubkey()
+        market_keys.coin_wallet
     );
     Ok(())
 }
@@ -188,9 +188,9 @@ pub struct MarketKeys {
     pub asks: Pubkey,
     pub coin_mint: Pubkey,
     pub coin_vault: Pubkey,
-    pub coin_wallet_key: Keypair,
+    pub coin_wallet: Pubkey,
     pub pc_mint: Pubkey,
     pub pc_vault: Pubkey,
-    pub pc_wallet_key: Keypair,
+    pub pc_wallet: Pubkey,
     pub vault_signer: Pubkey,
 }
