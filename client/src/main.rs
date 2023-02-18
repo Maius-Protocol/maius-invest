@@ -19,7 +19,7 @@ use {
     serum_common::client::rpc::mint_to_new_account,
     solana_sdk::{
         instruction::Instruction, native_token::LAMPORTS_PER_SOL, signature::Keypair,
-        signer::Signer,
+        signer::Signer, system_instruction::transfer,
     },
     std::{mem::size_of, num::NonZeroU64},
     utils::*,
@@ -447,10 +447,7 @@ fn create_investment_and_deposit(
             AccountMeta::new_readonly(system_program::ID, false),
             AccountMeta::new_readonly(token::ID, false),
         ],
-        data: maius_invest::instruction::Deposit {
-            amount: 1_000_000_000_000_000,
-        }
-        .data(),
+        data: maius_invest::instruction::Deposit {}.data(),
     };
 
     sign_send_and_confirm_tx(
@@ -661,7 +658,7 @@ fn create_investment(
         .data(),
     };
 
-    let thread_create_deposit_ix = thread_create(
+    let create_investment_thread = thread_create(
         client.payer_pubkey(),
         investment_thread_id,
         Instruction {
@@ -696,7 +693,7 @@ fn create_investment(
         },
     );
 
-    let thread_create_claim_ix = thread_create(
+    let create_claim_thread = thread_create(
         client.payer_pubkey(),
         claim_thread_id,
         Instruction {
@@ -732,6 +729,43 @@ fn create_investment(
             size: 8,
         },
     );
+
+    let fund_investment_thread = transfer(&client.payer_pubkey(), &investment_thread, 100_000_000);
+
+    let fund_claim_thread = transfer(&client.payer_pubkey(), &claim_thread, 100_000_000);
+
+    print_explorer_link(investment, "investment_account".into())?;
+    print_explorer_link(
+        investment_open_orders_account.unwrap(),
+        "investment_open_orders_account".into(),
+    )?;
+    print_explorer_link(investment_thread, "investment_thread".into())?;
+    print_explorer_link(claim_thread, "claim_thread".into())?;
+    print_explorer_link(investor_pc_vault, "investor_pc_vault".into())?;
+    print_explorer_link(investor_coin_vault, "investor_coin_vault".into())?;
+    print_explorer_link(investment_pc_vault, "investment_pc_vault".into())?;
+    print_explorer_link(investment_coin_vault, "investment_coin_vault".into())?;
+
+    sign_send_and_confirm_tx(
+        &client,
+        [create_investment_ix].to_vec(),
+        None,
+        "Creating investment...".into(),
+    )?;
+
+    sign_send_and_confirm_tx(
+        &client,
+        [create_investment_thread, fund_investment_thread].to_vec(),
+        Some([client.payer()].to_vec()),
+        "Creating investment_thread & funding investment_thread...".into(),
+    )?;
+
+    sign_send_and_confirm_tx(
+        &client,
+        [create_claim_thread, fund_claim_thread].to_vec(),
+        Some([client.payer()].to_vec()),
+        "Creating claim_thread & funding claim_thread...".into(),
+    )?;
 
     Ok(())
 }
